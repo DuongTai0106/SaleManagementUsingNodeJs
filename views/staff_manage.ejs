@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dash - Staff Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style type="text/css">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f2f6fc;
+            color: #69707a;
+            padding-top: 70px;
+            background-image: url('/images/background.jpg');
+            background-repeat: repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+    
+        .navbar-custom {
+            background-color: #2d2d2d;
+            box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+            padding: 10px;
+            margin-bottom: 40px;
+            border-radius: 0.35rem;
+        }
+    
+        .navbar-nav {
+            flex-direction: row;
+        }
+    
+        .nav-link {
+            color: #fff;
+            transition: color 0.3s, background-color 0.3s;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin: 0 5px;
+        }
+    
+        .nav-link:hover, .nav-link:focus {
+            background-color: #fff;
+            color: #2d2d2d;
+        }
+    
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
+            border-radius: 0.35rem;
+        }
+    
+        h1 {
+            color: #2d2d2d;
+        }
+    
+        p {
+            color: #69707a;
+        }
+    
+        .navbar-right {
+            margin-left: auto;
+        }
+    
+        .img-account-profile {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    
+        .rounded-circle {
+            border-radius: 50% !important;
+        }
+    
+        .dropdown-menu {
+            background-color: #2d2d2d;
+        }
+
+        .dropdown-menu a {
+            color: #fff;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #fff;
+            color: #2d2d2d;
+        }
+    </style>
+    
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/" style="color: #fff;">Dash</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Management
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <% if (role === 'ADMIN') { %>
+                            <li><a class="dropdown-item" href="/users">Staffs</a></li>
+                            <% } %>
+                            <li><a class="dropdown-item" href="/products">Products</a></li>
+                            <li><a class="dropdown-item" href="/customers">Customers</a></li>
+                            <li><a class="dropdown-item" href="/orders">Orders</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav navbar-right">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUserLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="data:image/jpeg;base64,<%= avatar %>" alt="User" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 5px;">
+                            <%= firstName %>
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownUserLink">
+                            <li><a class="dropdown-item" href="/users/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/users/update">Change Password</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <form action="/users/logout" method="post">
+                            <button class="nav-link btn btn-link" type="submit">Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-xl px-4 mt-4">
+        <hr class="mt-0 mb-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h1>Employee List</h1>
+                        <button class="btn btn-success ">
+                            <a href="/users/create" style="text-decoration: none; color: #fff;">Create New Account</a>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive"></div>
+                            <table id="productTable" class="table table-hover table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">Profile</th>
+                                        <th class="text-center">Full Name</th>
+                                        <th class="text-center">Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <%if (users){
+                                        users.forEach(u=>{%>
+                                    <tr>
+                                        <td class="text-center align-middle"><img class="img-account-profile rounded-circle" src="data:image/jpeg;base64,<%-u.avatar%>" alt="Profile Image"></td>
+                                        <td class="text-center align-middle"><%-u.fullname%></td>
+                                        <%if(u.isLocked){%>
+                                        <td class="text-center align-middle"><div class="text text-danger">Locked</div></td>
+                                        <%}else{%>
+                                        <td class="text-center align-middle"><div class="text text-success">Normal</div></td>
+                                        <%}%>
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex justify-content-between">
+                                                <button id="sendEmail" class="btn btn-dark btn-sm flex-grow-1 mx-1" onclick="sendLoginEmail('<%-u.email%>')">Send Login Email</button>
+                                                <button id="toggleAcc" class="btn btn-danger btn-sm flex-grow-1 mx-1" onclick="toggleAccountStatus('<%-u._id%>')">Toggle Account</button>
+                                                <button id="viewInfo" class="btn btn-info btn-sm flex-grow-1 mx-1" onclick="viewSalesInfo('<%-u._id%>')">View Information</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <%})}%>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Email send Modal -->
+    <div class="modal fade" id="sendEmailModal" tabindex="-1" aria-labelledby="sendEmailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sendEmailModalLabel">Email Sent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Email has been sent successfully.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle Account modal -->
+    <div class="modal fade" id="toggleAccountModal" tabindex="-1" aria-labelledby="toggleAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="toggleAccountModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to toggle the account status?
+                </div>
+                <input type="text" id="HUI" hidden>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="confirmToggleAccount()">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- View User's Details Modal -->
+    <div class="modal fade" id="userInfoModal" tabindex="-1" aria-labelledby="userInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userInfoModalLabel">User Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xl-4">
+                            <div class="card mb-4 mb-xl-0">
+                                <div class="card-header">Profile Picture</div>
+                                <div class="card-body text-center">
+                                    <img class="img-account-profile rounded-circle mb-2" id="userProfileImage" src="#" alt="Profile Image">
+                                    <div class="small font-italic text-muted mb-4" id="userName"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-8">
+                            <div class="card mb-4">
+                                <div class="card-header">Account Details</div>
+                                <div class="card-body">
+                                    <div class="row gx-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="small mb-1" for="Fullname">Fullname</label>
+                                            <input class="form-control" id="userFullname" type="text" placeholder="Fullname" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="small mb-1" for="Email">Email</label>
+                                            <input class="form-control" id="userEmail" type="text" placeholder="Email" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="small mb-1" for="Role">Role</label>
+                                            <input class="form-control" id="userRole" type="text" placeholder="Role" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="small mb-1" for="State">State</label>
+                                            <input class="form-control" id="userState" type="text" placeholder="State" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" 
+    crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+            
+        function sendLoginEmail(email) {
+            alert(`Login email sent for Employee ID: ${email}`);
+            $('#sendEmailModal').modal('show');
+        }
+
+        function toggleAccountStatus(id) {
+            document.getElementById('HUI').value = id
+            $('#toggleAccountModal').modal('show');
+        }
+
+        function confirmToggleAccount() {
+            let userId = document.getElementById('HUI').value;
+
+            fetch('/users/', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({userId}),
+                timeout:3000,
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+            })
+            .then(data=>{
+                $('#toggleAccountModal').modal('hide');
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Request timed out. Please try again.');
+                location.reload();
+            });
+
+            
+        }
+
+        function viewSalesInfo(id) {
+            
+            fetch(`/users/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({id}),
+                timeout:3000,
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Server responded with status: ' + response.status);
+                }
+            })
+            .then(data => {
+                let user = data.data 
+                document.getElementById('userProfileImage').src = `data:image/jpeg;base64,${user.avatar}`;
+                document.getElementById('userFullname').value = user.fullname;
+                document.getElementById('userName').innerHTML = user.fullname;
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userState').value = user.isLocked ? 'Locked' : 'Normal';
+                $('#userInfoModal').modal('show');
+                
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('Request timed out. Please try again.');
+                location.reload();
+            });
+        }
+
+    </script>
+</body>
+</html>
